@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Torneo de Kiños</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- SheetJS para exportar Excel -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --g: #16a34a;
+  --r: #dc2626;
+  /* Amarillo muy claro/brillante para máxima legibilidad */
+  --y: #fff176;
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+
+body {
+  background-color: var(--g);
+  background-image: url("fondo-arrecho.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--y);
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.55);
+  min-height: 100vh; padding: 2rem 1rem 5rem;
+}
+.container { max-width: 720px; margin: 0 auto; }
+
+header { text-align: center; margin-bottom: 2.5rem; }
+header::before {
+  content:''; display:block; width:80px; height:3px;
+  background:var(--r); margin:0 auto 1rem; border-radius:2px;
+}
+header .eyebrow {
+  font-size:11px; letter-spacing:0.18em; text-transform:uppercase;
+  color:var(--y); opacity:0.6; margin-bottom:0.4rem;
+}
+header h1 {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(3rem,10vw,5.5rem);
+  letter-spacing:0.04em; line-height:0.92; color:var(--y);
+}
+header h1 em { color:var(--r); font-style:normal; }
+header p { color:var(--y); opacity:0.6; font-size:13px; margin-top:0.5rem; }
+
+.card {
+  background:var(--g); border:1.5px solid var(--y);
+  border-radius:var(--radius-lg); padding:1.25rem 1.5rem; margin-bottom:1rem;
+}
+
+.stitle {
+  font-size:10px; letter-spacing:0.14em; text-transform:uppercase;
+  color:var(--y); opacity:0.55; font-weight:600; margin-bottom:0.75rem;
+}
+
+label {
+  display:block; font-size:11px; color:var(--y); opacity:0.7;
+  margin-bottom:5px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase;
+}
+input[type="text"], input[type="password"], select {
+  width:100%; background:var(--g); border:1.5px solid var(--y);
+  border-radius:var(--radius); color:var(--y);
+  font-family:'DM Sans',sans-serif; font-size:14px;
+  padding:10px 14px; outline:none; transition:border-color 0.15s; appearance:none;
+}
+input::placeholder { color:var(--y); opacity:0.35; }
+input:focus, select:focus { border-color:var(--r); }
+select {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%23fff176' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center; padding-right:32px; cursor:pointer;
+}
+select option { background:var(--g); color:var(--y); }
+.g2 { display:grid; gap:12px; grid-template-columns:1fr 1fr; }
+.g3 { display:grid; gap:12px; grid-template-columns:1fr 1fr 1fr; }
+@media(max-width:520px){ .g2,.g3 { grid-template-columns:1fr; } }
+.fg { display:flex; flex-direction:column; }
+
+.nivel-row { display:flex; gap:5px; margin-top:2px; }
+.nv {
+  flex:1; border:1.5px solid var(--y); border-radius:8px;
+  background:var(--g); color:var(--y);
+  font-family:'DM Sans',sans-serif; font-size:10px; font-weight:600;
+  padding:7px 3px; cursor:pointer; transition:all 0.15s;
+  display:flex; flex-direction:column; align-items:center; gap:2px; text-align:center;
+  opacity:0.6;
+}
+.nv:hover { border-color:var(--r); color:var(--r); opacity:1; }
+.nv.on { background:var(--y); border-color:var(--y); color:var(--g); opacity:1; }
+.nv .ic { font-size:14px; line-height:1; }
+
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  border:none; border-radius:var(--radius); cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
+  padding:10px 18px; transition:opacity 0.15s, transform 0.1s;
+}
+.btn:active { transform:scale(0.97); }
+.btn:disabled { opacity:0.25; cursor:not-allowed; transform:none !important; }
+.ba { background:var(--r); color:var(--y); border:none; }
+.ba:hover:not(:disabled) { opacity:0.85; }
+.bg { background:var(--g); color:var(--y); border:1.5px solid var(--y); }
+.bg:hover:not(:disabled) { border-color:var(--r); color:var(--r); }
+.bd { background:var(--g); color:var(--r); border:1.5px solid var(--r); }
+.bd:hover:not(:disabled) { background:var(--r); color:var(--y); }
+.bbig {
+  width:100%; padding:15px;
+  font-family:'Bebas Neue',sans-serif; font-size:17px; letter-spacing:0.06em; font-weight:400;
+}
+
+.notice {
+  border-radius:var(--radius); padding:9px 13px;
+  font-size:13px; margin-top:10px; display:none;
+}
+
+.stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:1rem; }
+@media(max-width:480px){ .stats { grid-template-columns:repeat(2,1fr); } }
+.stat {
+  background:var(--g); border:1.5px solid var(--y);
+  border-radius:var(--radius); padding:12px 10px; text-align:center;
+}
+.sv { font-family:'Bebas Neue',sans-serif; font-size:2rem; line-height:1; color:var(--y); }
+.sl { font-size:10px; color:var(--y); opacity:0.55; margin-top:2px; text-transform:uppercase; letter-spacing:0.08em; }
+
+.prow {
+  display:flex; align-items:center; gap:10px;
+  background:var(--g); border:1.5px solid var(--y);
+  border-radius:var(--radius); padding:9px 13px;
+  animation:fadeUp 0.2s ease both;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:none} }
+.pnum {
+  width:22px; height:22px; border-radius:50%; flex-shrink:0;
+  background:var(--g); border:1.5px solid var(--y);
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:600; color:var(--y);
+}
+.pinfo { flex:1; min-width:0; }
+.pname { font-weight:600; font-size:14px; color:var(--y); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pmeta { font-size:11px; color:var(--y); opacity:0.55; margin-top:1px; }
+.pbadges { display:flex; gap:5px; flex-wrap:wrap; flex-shrink:0; }
+.bx {
+  font-size:10px; font-weight:700; border-radius:5px;
+  padding:2px 8px; white-space:nowrap;
+}
+.b-sem  { background:var(--y); color:var(--g); }
+.b-nv   { background:var(--g); color:var(--y); border:1.5px solid var(--y); }
+.b-paid { background:var(--r); color:var(--y); }
+.rmbtn {
+  background:none; border:none; cursor:pointer; color:var(--y);
+  opacity:0.4; font-size:17px; line-height:1; transition:all 0.15s; flex-shrink:0;
+}
+.rmbtn:hover { color:var(--r); opacity:1; }
+
+.toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:1rem; }
+
+.pmini { display:flex; gap:2px; }
+.pp { width:6px; height:6px; border-radius:50%; background:var(--y); opacity:0.25; }
+.pp.on { background:var(--y); opacity:1; }
+
+.plist { display:flex; flex-direction:column; gap:10px; }
+.pc {
+  border-radius:var(--radius-lg); border:1.5px solid var(--y);
+  background:var(--g); overflow:hidden;
+  animation:pop 0.3s ease both;
+}
+@keyframes pop { from{opacity:0;transform:scale(0.95) translateY(8px)} to{opacity:1;transform:none} }
+.pc-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:7px 14px; border-bottom:1.5px solid var(--y);
+}
+.pc-num { font-size:11px; color:var(--y); opacity:0.5; font-weight:600; letter-spacing:0.05em; }
+.plbl {
+  font-size:10px; font-weight:700; letter-spacing:0.05em;
+  text-transform:uppercase; border-radius:5px; padding:3px 9px;
+}
+.lp  { background:var(--r); color:var(--y); }
+.lr  { background:var(--y); color:var(--g); }
+.ld  { background:var(--r); color:var(--y); }
+.lv  { background:var(--y); color:var(--g); }
+.lrn { background:var(--g); color:var(--y); border:1.5px solid var(--y); }
+
+.pc-body { display:flex; align-items:stretch; }
+.pp2 {
+  flex:1; padding:12px 14px;
+  display:flex; flex-direction:column; justify-content:center; gap:3px;
+}
+.pp2.r { text-align:right; align-items:flex-end; }
+.pp2-name { font-weight:600; font-size:14px; color:var(--y); }
+.pp2-career { font-size:11px; color:var(--y); opacity:0.55; }
+.pp2-stats { display:flex; gap:5px; align-items:center; margin-top:3px; flex-wrap:wrap; }
+.pp2.r .pp2-stats { justify-content:flex-end; }
+.pc-vs {
+  display:flex; align-items:center; justify-content:center;
+  padding:10px 6px; min-width:44px; flex-shrink:0;
+  border-left:1.5px solid var(--y); border-right:1.5px solid var(--y);
+}
+.vs-txt { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; color:var(--r); }
+
+.bye-row {
+  display:flex; align-items:center; gap:10px;
+  border-radius:var(--radius); padding:11px 15px; margin-top:8px;
+  border:1.5px dashed var(--y); font-size:13px; color:var(--y); opacity:0.65;
+}
+
+.legend { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:1.25rem; }
+.li { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--y); opacity:0.7; }
+.ld2 { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+.divider { border:none; border-top:1.5px solid var(--y); opacity:0.3; margin:1.5rem 0; }
+
+.admin-link {
+  position:fixed; bottom:1.5rem; right:1.5rem;
+  font-size:11px; color:var(--y); text-decoration:none;
+  background:var(--g); border:1.5px solid var(--y);
+  border-radius:8px; padding:7px 12px; cursor:pointer;
+  transition:all 0.15s; z-index:99; opacity:0.7;
+}
+.admin-link:hover { border-color:var(--r); color:var(--r); opacity:1; }
+
+#login-overlay {
+  position:fixed; inset:0;
+  background-color:var(--g);
+  background-image:url("fondo-arrecho.png");
+  background-size:cover; background-position:center;
+  background-repeat:no-repeat; background-attachment:fixed;
+  display:none; align-items:center; justify-content:center; z-index:200;
+}
+.login-box {
+  background:var(--g); border:2px solid var(--y);
+  border-radius:var(--radius-lg); padding:2rem; width:100%; max-width:340px;
+}
+.login-box h2 {
+  font-family:'Bebas Neue',sans-serif; font-size:1.8rem; letter-spacing:0.04em;
+  color:var(--y); margin-bottom:1.25rem;
+}
+
+#pub-section  { display:block; }
+#admin-section { display:none; }
+
+@keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+.spinning { animation:spin 0.4s ease; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ════════════════════════════════
+       VISTA PÚBLICA — FORM DE REGISTRO
+       ════════════════════════════════ -->
+  <div id="pub-section">
+    <header>
+      <p class="eyebrow">Inscripción · Torneo de Kiños</p>
+      <h1>UNITE AL<br><em>TORNEO</em></h1>
+      <p>Completá el formulario para quedar inscrito. ¡Los cupos son limitados!</p>
+    </header>
+
+    <div class="card">
+      <p class="stitle">Datos del participante</p>
+
+      <div class="g2" style="margin-bottom:12px;">
+        <div class="fg">
+          <label for="p-name">Nombre completo</label>
+          <input type="text" id="p-name" placeholder="Ej: Juan Pérez" autocomplete="off" />
+        </div>
+        <div class="fg">
+          <label for="p-email">Correo electrónico</label>
+          <input type="text" id="p-email" placeholder="Ej: juan@universidad.edu.co" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="fg" style="margin-bottom:12px;">
+          <label for="p-carrera">Carrera</label>
+          <input type="text" id="p-carrera" list="cl" placeholder="Ej: Ingeniería de Sistemas" autocomplete="off" />
+          <datalist id="cl">
+            <option value="Ingeniería de Sistemas"><option value="Ingeniería Civil">
+            <option value="Ingeniería Industrial"><option value="Ingeniería Electrónica">
+            <option value="Ingeniería Mecánica"><option value="Diseño Gráfico">
+            <option value="Diseño Industrial"><option value="Arquitectura">
+            <option value="Derecho"><option value="Economía">
+            <option value="Administración de Empresas"><option value="Contaduría Pública">
+            <option value="Medicina"><option value="Enfermería">
+            <option value="Odontología"><option value="Psicología">
+            <option value="Trabajo Social"><option value="Comunicación Social">
+            <option value="Periodismo"><option value="Filosofía">
+            <option value="Matemáticas"><option value="Biología">
+            <option value="Química"><option value="Física">
+            <option value="Educación"><option value="Veterinaria">
+            <option value="Agronomía">
+          </datalist>
+      </div>
+
+      <div class="g3" style="margin-bottom:12px;">
+        <div class="fg">
+          <label for="p-sem">Semestre</label>
+          <select id="p-sem">
+            <option value="">— Sem —</option>
+            <option value="1">1°</option><option value="2">2°</option>
+            <option value="3">3°</option><option value="4">4°</option>
+            <option value="5">5°</option><option value="6">6°</option>
+            <option value="7">7°</option><option value="8">8°</option>
+            <option value="9">9°</option><option value="10">10°</option>
+          </select>
+        </div>
+        <div class="fg" style="grid-column:span 2;">
+          <label>Nivel de pelea (honesto wey)</label>
+          <div class="nivel-row" id="pub-nivel">
+            <button type="button" class="nv" data-v="1" onclick="pubNivel(1)"><span class="ic">😴</span><span>1 · Relajado</span></button>
+            <button type="button" class="nv" data-v="2" onclick="pubNivel(2)"><span class="ic">😤</span><span>2 · Despierto</span></button>
+            <button type="button" class="nv" data-v="3" onclick="pubNivel(3)"><span class="ic">💪</span><span>3 · Juega</span></button>
+            <button type="button" class="nv" data-v="4" onclick="pubNivel(4)"><span class="ic">🔥</span><span>4 · Peligroso</span></button>
+            <button type="button" class="nv" data-v="5" onclick="pubNivel(5)"><span class="ic">💀</span><span>5 · Letal</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="fg" style="margin-bottom:14px;">
+        <label for="p-pref">¿Querés quedar con alguien en específico? (nombre exacto)</label>
+        <input type="text" id="p-pref" placeholder="Opcional — dejá vacío si no" autocomplete="off" />
+      </div>
+
+      <button class="btn ba" onclick="pubSubmit()" style="width:100%;">Inscribirme al torneo</button>
+      <div class="notice" id="pub-notice"></div>
+    </div>
+
+    <div id="pub-count" style="text-align:center; font-size:13px; color:var(--muted); margin-top:0.5rem;"></div>
+  </div>
+
+
+  <!-- ════════════════════════════════
+       VISTA ADMIN
+       ════════════════════════════════ -->
+  <div id="admin-section">
+    <header>
+      <p class="eyebrow">Panel de administrador</p>
+      <h1>TORNEO<br>DE <em>KIÑOS</em></h1>
+      <p>Solo vos podés ver esto.</p>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="sv" id="a-total" style="color:var(--accent)">0</div>
+        <div class="sl">Inscritos</div>
+      </div>
+      <div class="stat">
+        <div class="sv" id="a-paid" style="color:var(--paid)">0</div>
+        <div class="sl">Con preferencia</div>
+      </div>
+      <div class="stat">
+        <div class="sv" id="a-matches" style="color:var(--vet)">0</div>
+        <div class="sl">Partidos</div>
+      </div>
+      <div class="stat">
+        <div class="sv" id="a-avg" style="color:var(--rivals)">—</div>
+        <div class="sl">Nivel avg</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <button class="btn ba" onclick="doSorteo()" id="sort-btn" disabled>⚡ Realizar sorteo</button>
+      <button class="btn bg" onclick="exportExcel()">📥 Exportar Excel</button>
+      <button class="btn bg" onclick="toggleAddForm()">+ Agregar manualmente</button>
+      <button class="btn bd" onclick="clearAll()">✕ Limpiar todo</button>
+    </div>
+
+    <!-- Form manual (oculto por default) -->
+    <div class="card" id="add-form" style="display:none;">
+      <p class="stitle">Agregar participante manualmente</p>
+      <div class="g2" style="margin-bottom:12px;">
+        <div class="fg">
+          <label>Nombre</label>
+          <input type="text" id="a-name" placeholder="Nombre" autocomplete="off" />
+        </div>
+        <div class="fg">
+          <label>Correo electrónico</label>
+          <input type="text" id="a-email" placeholder="correo@ejemplo.com" autocomplete="off" />
+        </div>
+      </div>
+      <div class="g2" style="margin-bottom:12px;">
+        <div class="fg">
+          <label>Carrera</label>
+          <input type="text" id="a-car" list="cl2" placeholder="Carrera" autocomplete="off" />
+          <datalist id="cl2">
+            <option value="Ingeniería de Sistemas"><option value="Diseño Gráfico">
+            <option value="Arquitectura"><option value="Derecho"><option value="Economía">
+          </datalist>
+        </div>
+      <div class="g3" style="margin-bottom:12px;">
+        <div class="fg">
+          <label>Semestre</label>
+          <select id="a-sem">
+            <option value="">— —</option>
+            <option value="1">1°</option><option value="2">2°</option>
+            <option value="3">3°</option><option value="4">4°</option>
+            <option value="5">5°</option><option value="6">6°</option>
+            <option value="7">7°</option><option value="8">8°</option>
+            <option value="9">9°</option><option value="10">10°</option>
+          </select>
+        </div>
+        <div class="fg" style="grid-column:span 2;">
+          <label>Nivel de pelea</label>
+          <div class="nivel-row" id="adm-nivel">
+            <button type="button" class="nv" data-v="1" onclick="admNivel(1)"><span class="ic">😴</span><span>1</span></button>
+            <button type="button" class="nv" data-v="2" onclick="admNivel(2)"><span class="ic">😤</span><span>2</span></button>
+            <button type="button" class="nv" data-v="3" onclick="admNivel(3)"><span class="ic">💪</span><span>3</span></button>
+            <button type="button" class="nv" data-v="4" onclick="admNivel(4)"><span class="ic">🔥</span><span>4</span></button>
+            <button type="button" class="nv" data-v="5" onclick="admNivel(5)"><span class="ic">💀</span><span>5</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:12px;">
+        <label>¿Paga para quedar con alguien?</label>
+        <select id="a-pref"><option value="">— Sin preferencia —</option></select>
+      </div>
+      <button class="btn ba" onclick="adminAdd()" style="width:100%;">+ Agregar</button>
+      <div class="notice" id="adm-notice"></div>
+    </div>
+
+    <!-- Lista de participantes -->
+    <div class="card" id="a-listcard" style="display:none;">
+      <p class="stitle">Participantes registrados</p>
+      <div id="a-list" style="display:flex;flex-direction:column;gap:7px;"></div>
+    </div>
+
+    <!-- Resultados -->
+    <div id="a-results" style="display:none;">
+      <hr class="divider" />
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:10px;">
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:0.04em;color:var(--accent);">ENFRENTAMIENTOS</span>
+        <button class="btn bg" onclick="doSorteo()">↻ Sortear de nuevo</button>
+      </div>
+      <div class="legend">
+        <div class="li"><div class="ld2" style="background:var(--paid)"></div>💸 Pareja VIP</div>
+        <div class="li"><div class="ld2" style="background:var(--rivals)"></div>⚔️ Rivales históricos</div>
+        <div class="li"><div class="ld2" style="background:var(--david)"></div>🔥 David vs Goliat</div>
+        <div class="li"><div class="ld2" style="background:var(--vet)"></div>🎓 Bicho vs Veterano</div>
+        <div class="li"><div class="ld2" style="background:var(--muted)"></div>🎲 Del montón</div>
+      </div>
+      <div class="plist" id="a-pairs"></div>
+      <div id="a-bye" style="display:none;">
+        <div class="bye-row">
+          <span>→</span>
+          <span id="a-bye-name" style="font-weight:600;color:var(--text);"></span>
+          <span style="font-size:11px;margin-left:auto;text-transform:uppercase;letter-spacing:0.08em;">Pasa directo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Volver -->
+    <div style="margin-top:1.5rem; text-align:center;">
+      <button class="btn bg" onclick="logout()">← Cerrar sesión admin</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════ LOGIN OVERLAY ════ -->
+<div id="login-overlay">
+  <div class="login-box">
+    <h2>Acceso admin</h2>
+    <div class="fg" style="margin-bottom:12px;">
+      <label for="user-inp">Usuario</label>
+      <input type="text" id="user-inp" placeholder="Usuario" autocomplete="off" onkeydown="if(event.key==='Enter') tryLogin()" />
+    </div>
+    <div class="fg" style="margin-bottom:12px;">
+      <label for="pass-inp">Contraseña</label>
+      <input type="password" id="pass-inp" placeholder="••••••••" onkeydown="if(event.key==='Enter') tryLogin()" />
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn ba" onclick="tryLogin()" style="flex:1;">Entrar</button>
+      <button class="btn bg" onclick="closeLogin()">Cancelar</button>
+    </div>
+    <div class="notice" id="login-notice"></div>
+  </div>
+</div>
+
+
+<!-- Admin link fijo -->
+<a class="admin-link" onclick="openLogin()">🔒 Admin</a>
+
+
+<script>
+// ════════════════════════════════════════════
+//  CONFIGURACIÓN — cambiá esto
+// ════════════════════════════════════════════
+const ADMIN_USER = 'mapunina1';
+const ADMIN_PASS = '16082004@Todo';
+
+// Carreras rivales históricas
+const RIVAL_PAIRS = [
+  ['Ingeniería de Sistemas','Diseño Gráfico'],
+  ['Ingeniería Civil','Arquitectura'],
+  ['Ingeniería Industrial','Administración de Empresas'],
+  ['Ingeniería Mecánica','Ingeniería Civil'],
+  ['Ingeniería Electrónica','Ingeniería de Sistemas'],
+  ['Derecho','Economía'],['Derecho','Filosofía'],
+  ['Medicina','Enfermería'],['Medicina','Odontología'],
+  ['Administración de Empresas','Contaduría Pública'],
+  ['Psicología','Trabajo Social'],
+  ['Comunicación Social','Periodismo'],
+  ['Diseño Gráfico','Comunicación Social'],
+  ['Veterinaria','Agronomía'],
+  ['Matemáticas','Física'],
+  ['Economía','Contaduría Pública'],
+];
+
+// ════════════════════════════════════════════
+//  ESTADO
+// ════════════════════════════════════════════
+const DB_KEY = 'kinos_players';
+let isAdmin  = false;
+let pubNivelSel = 0;
+let admNivelSel = 0;
+let addFormOpen = false;
+
+function load()   { try { return JSON.parse(localStorage.getItem(DB_KEY)) || []; } catch(e){ return []; } }
+function save(ps) { localStorage.setItem(DB_KEY, JSON.stringify(ps)); }
+
+// ════════════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════════════
+function openLogin()  {
+  document.getElementById('login-overlay').style.display='flex';
+  document.getElementById('user-inp').value='';
+  document.getElementById('pass-inp').value='';
+  setTimeout(()=>document.getElementById('user-inp').focus(),100);
+}
+function closeLogin() { document.getElementById('login-overlay').style.display='none'; }
+
+function tryLogin() {
+  const u = document.getElementById('user-inp').value.trim();
+  const v = document.getElementById('pass-inp').value;
+  if (u === ADMIN_USER && v === ADMIN_PASS) {
+    isAdmin = true;
+    closeLogin();
+    document.getElementById('pub-section').style.display   = 'none';
+    document.getElementById('admin-section').style.display = 'block';
+    renderAdmin();
+  } else {
+    const n = document.getElementById('login-notice');
+    n.textContent = 'Usuario o contraseña incorrectos.';
+    n.style.display='block';
+    n.style.color='var(--y)';
+    n.style.background='var(--r)';
+    n.style.border='1.5px solid var(--y)';
+  }
+}
+
+function logout() {
+  isAdmin = false;
+  document.getElementById('pub-section').style.display   = 'block';
+  document.getElementById('admin-section').style.display = 'none';
+  document.getElementById('a-results').style.display     = 'none';
+}
+
+// ════════════════════════════════════════════
+//  NIVEL SELECTORS
+// ════════════════════════════════════════════
+function pubNivel(v) {
+  pubNivelSel = pubNivelSel===v ? 0 : v;
+  document.querySelectorAll('#pub-nivel .nv').forEach(b=>b.classList.toggle('on', parseInt(b.dataset.v)===pubNivelSel));
+}
+function admNivel(v) {
+  admNivelSel = admNivelSel===v ? 0 : v;
+  document.querySelectorAll('#adm-nivel .nv').forEach(b=>b.classList.toggle('on', parseInt(b.dataset.v)===admNivelSel));
+}
+
+// ════════════════════════════════════════════
+//  FORM PÚBLICO — REGISTRO
+// ════════════════════════════════════════════
+function notice(id, msg, type) {
+  const n = document.getElementById(id);
+  n.textContent = msg;
+  n.style.display='block';
+  n.style.color      = 'var(--y)';
+  n.style.background = type==='err' ? 'var(--r)'  : 'var(--g)';
+  n.style.border     = '1.5px solid var(--y)';
+  clearTimeout(notice._t);
+  notice._t = setTimeout(()=>n.style.display='none', 5000);
+}
+
+function pubSubmit() {
+  const name    = document.getElementById('p-name').value.trim();
+  const email   = document.getElementById('p-email').value.trim();
+  const carrera = document.getElementById('p-carrera').value.trim();
+  const sem     = parseInt(document.getElementById('p-sem').value)||0;
+  const pref    = document.getElementById('p-pref').value.trim() || null;
+
+  if (!name)    { notice('pub-notice','Escribí tu nombre.','err'); return; }
+  if (!email || !email.includes('@')) { notice('pub-notice','Escribí un correo válido.','err'); return; }
+  if (!carrera) { notice('pub-notice','Escribí tu carrera.','err'); return; }
+  if (!sem)     { notice('pub-notice','Elegí tu semestre.','err'); return; }
+  if (!pubNivelSel) { notice('pub-notice','Elegí tu nivel de pelea.','err'); return; }
+
+  const players = load();
+  if (players.find(p=>p.name.toLowerCase()===name.toLowerCase())) {
+    notice('pub-notice','Ya hay alguien con ese nombre inscrito.','err'); return;
+  }
+
+  players.push({
+    name, email, carrera, sem, nivel: pubNivelSel,
+    paidFor: pref || null,
+    ts: new Date().toLocaleString('es-CO')
+  });
+  save(players);
+
+  document.getElementById('p-name').value    = '';
+  document.getElementById('p-email').value   = '';
+  document.getElementById('p-carrera').value = '';
+  document.getElementById('p-sem').value     = '';
+  document.getElementById('p-pref').value    = '';
+  pubNivelSel = 0;
+  document.querySelectorAll('#pub-nivel .nv').forEach(b=>b.classList.remove('on'));
+
+  updatePubCount();
+  notice('pub-notice',`¡${name} quedó inscrito! 🎉 Buena suerte.`,'ok');
+  // Auto-guardado en Excel (descarga automática)
+  exportExcel(true);
+}
+
+function updatePubCount() {
+  const n = load().length;
+  document.getElementById('pub-count').textContent =
+    n === 0 ? '' : `${n} participante${n!==1?'s':''} inscrito${n!==1?'s':''} hasta ahora.`;
+}
+
+// ════════════════════════════════════════════
+//  ADMIN — RENDER
+// ════════════════════════════════════════════
+function renderAdmin() {
+  const players = load();
+
+  document.getElementById('a-total').textContent   = players.length;
+  document.getElementById('a-paid').textContent    = players.filter(p=>p.paidFor).length;
+  document.getElementById('a-matches').textContent = Math.floor(players.length/2);
+  document.getElementById('a-avg').textContent     = players.length
+    ? (players.reduce((a,p)=>a+p.nivel,0)/players.length).toFixed(1) : '—';
+
+  // Dropdown preferencia
+  const sel = document.getElementById('a-pref');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Sin preferencia —</option>';
+  players.forEach(p=>{ const o=document.createElement('option'); o.value=p.name; o.textContent=p.name; sel.appendChild(o); });
+  if (cur && players.find(p=>p.name===cur)) sel.value=cur;
+
+  // Lista
+  const lc = document.getElementById('a-listcard');
+  const ll = document.getElementById('a-list');
+  lc.style.display = players.length ? 'block' : 'none';
+  ll.innerHTML = players.map((p,i)=>`
+    <div class="prow" style="animation-delay:${i*20}ms">
+      <span class="pnum">${i+1}</span>
+      <div class="pinfo">
+        <div class="pname">${p.name}</div>
+        <div class="pmeta">${p.email||'sin correo'} · ${p.carrera} · ${p.ts||'—'}</div>
+      </div>
+      <div class="pbadges">
+        <span class="bx b-sem">${p.sem}° sem</span>
+        <span class="bx b-nv">Nv ${p.nivel}</span>
+        ${p.paidFor?`<span class="bx b-paid">💸 ${p.paidFor}</span>`:''}
+      </div>
+      <button class="rmbtn" onclick="adminRemove(${i})">&times;</button>
+    </div>
+  `).join('');
+
+  document.getElementById('sort-btn').disabled = players.length < 2;
+}
+
+// ════════════════════════════════════════════
+//  ADMIN — AGREGAR MANUAL
+// ════════════════════════════════════════════
+function toggleAddForm() {
+  addFormOpen = !addFormOpen;
+  document.getElementById('add-form').style.display = addFormOpen ? 'block' : 'none';
+}
+
+function adminAdd() {
+  const name    = document.getElementById('a-name').value.trim();
+  const email   = document.getElementById('a-email').value.trim();
+  const carrera = document.getElementById('a-car').value.trim();
+  const sem     = parseInt(document.getElementById('a-sem').value)||0;
+  const paidFor = document.getElementById('a-pref').value || null;
+
+  if (!name)    { notice('adm-notice','Nombre requerido.','err'); return; }
+  if (!carrera) { notice('adm-notice','Carrera requerida.','err'); return; }
+  if (!sem)     { notice('adm-notice','Semestre requerido.','err'); return; }
+  if (!admNivelSel){ notice('adm-notice','Elegí el nivel.','err'); return; }
+
+  const players = load();
+  if (players.find(p=>p.name.toLowerCase()===name.toLowerCase())) {
+    notice('adm-notice','Ya existe ese nombre.','err'); return;
+  }
+
+  players.push({ name, email: email||'—', carrera, sem, nivel:admNivelSel, paidFor, ts: new Date().toLocaleString('es-CO') });
+  save(players);
+
+  document.getElementById('a-name').value  = '';
+  document.getElementById('a-email').value = '';
+  document.getElementById('a-car').value   = '';
+  document.getElementById('a-sem').value   = '';
+  document.getElementById('a-pref').value  = '';
+  admNivelSel = 0;
+  document.querySelectorAll('#adm-nivel .nv').forEach(b=>b.classList.remove('on'));
+
+  renderAdmin();
+  notice('adm-notice',`${name} agregado.`,'ok');
+  // Auto-guardado en Excel (descarga automática)
+  exportExcel(true);
+}
+
+function adminRemove(i) {
+  const players = load();
+  const rm = players[i].name;
+  players.splice(i,1);
+  players.forEach(p=>{ if(p.paidFor===rm) p.paidFor=null; });
+  save(players);
+  renderAdmin();
+  document.getElementById('a-results').style.display='none';
+}
+
+function clearAll() {
+  if (!confirm('¿Borrar TODOS los participantes? Esto no se puede deshacer.')) return;
+  save([]);
+  renderAdmin();
+  document.getElementById('a-results').style.display='none';
+}
+
+// ════════════════════════════════════════════
+//  EXPORTAR EXCEL
+// ════════════════════════════════════════════
+function exportExcel(auto=false) {
+  const players = load();
+  if (!players.length) { if(!auto) alert('No hay participantes todavía.'); return; }
+
+  const data = [
+    ['#','Nombre','Correo electrónico','Carrera','Semestre','Nivel de pelea','Preferencia de rival','Fecha de registro']
+  ];
+  players.forEach((p,i)=>{
+    data.push([i+1, p.name, p.email||'—', p.carrera, `${p.sem}°`, p.nivel, p.paidFor||'—', p.ts||'—']);
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(data);
+
+  ws['!cols'] = [
+    {wch:5},{wch:25},{wch:30},{wch:30},{wch:12},{wch:16},{wch:28},{wch:22}
+  ];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Participantes');
+
+  const fecha = new Date().toLocaleDateString('es-CO').replace(/\//g,'-');
+  const fname = auto ? `torneo_kinos_autoregistro_${fecha}.xlsx` : `torneo_kinos_${fecha}.xlsx`;
+  XLSX.writeFile(wb, fname);
+}
+
+// ════════════════════════════════════════════
+//  ALGORITMO DE SORTEO
+// ════════════════════════════════════════════
+function areRivals(c1,c2) {
+  if(!c1||!c2) return false;
+  const a=c1.trim().toLowerCase(), b=c2.trim().toLowerCase();
+  return RIVAL_PAIRS.some(([x,y])=>(x.toLowerCase()===a&&y.toLowerCase()===b)||(x.toLowerCase()===b&&y.toLowerCase()===a));
+}
+
+function scorePair(a,b) {
+  let s=0;
+  if(areRivals(a.carrera,b.carrera)) s+=100;
+  const lg=Math.abs(a.nivel-b.nivel); if(lg>=3) s+=lg*25;
+  const sg=Math.abs(a.sem-b.sem);    if(sg>=4) s+=sg*12;
+  s+=Math.random()*8;
+  return s;
+}
+
+function pairMeta(a,b) {
+  if(areRivals(a.carrera,b.carrera))  return { lbl:'⚔️ Rivales históricos', cls:'lr' };
+  if(Math.abs(a.nivel-b.nivel)>=3)    return { lbl:'🔥 David vs Goliat',    cls:'ld' };
+  if(Math.abs(a.sem-b.sem)>=4)        return { lbl:'🎓 Bicho vs Veterano',  cls:'lv' };
+  return                                     { lbl:'🎲 Del montón',          cls:'lrn'};
+}
+
+function greedyMatch(pool) {
+  const pairs=[],rem=[...pool];
+  while(rem.length>=2){
+    let best=-1,bi=0,bj=1;
+    for(let i=0;i<rem.length;i++)
+      for(let j=i+1;j<rem.length;j++){ const s=scorePair(rem[i],rem[j]); if(s>best){best=s;bi=i;bj=j;} }
+    pairs.push({a:rem[bi],b:rem[bj],meta:pairMeta(rem[bi],rem[bj])});
+    rem.splice(bj,1); rem.splice(bi,1);
+  }
+  return {pairs, bye:rem[0]||null};
+}
+
+function pips(n) {
+  let h='<div class="pmini">';
+  for(let i=1;i<=5;i++) h+=`<div class="pp${i<=n?' on':''}"></div>`;
+  return h+'</div>';
+}
+
+function doSorteo() {
+  document.getElementById('sort-btn').classList.add('spinning');
+  setTimeout(()=>document.getElementById('sort-btn').classList.remove('spinning'),400);
+
+  const players = load();
+  const allPairs=[],used=new Set();
+
+  // Parejas pagadas
+  for(const p of players){
+    if(!p.paidFor||used.has(p.name)) continue;
+    const t=players.find(x=>x.name===p.paidFor&&!used.has(x.name));
+    if(t){ allPairs.push({a:p,b:t,meta:{lbl:'💸 Pareja VIP',cls:'lp'}}); used.add(p.name); used.add(t.name); }
+  }
+
+  const {pairs,bye}=greedyMatch(players.filter(p=>!used.has(p.name)));
+  allPairs.push(...pairs);
+
+  document.getElementById('a-pairs').innerHTML=allPairs.map((pair,i)=>`
+    <div class="pc" style="animation-delay:${i*50}ms">
+      <div class="pc-head">
+        <span class="pc-num">PARTIDO #${i+1}</span>
+        <span class="plbl ${pair.meta.cls}">${pair.meta.lbl}</span>
+      </div>
+      <div class="pc-body">
+        <div class="pp2">
+          <div class="pp2-name">${pair.a.name}</div>
+          <div class="pp2-career">${pair.a.carrera}</div>
+          <div class="pp2-stats"><span class="bx b-sem">${pair.a.sem}° sem</span>${pips(pair.a.nivel)}</div>
+        </div>
+        <div class="pc-vs"><span class="vs-txt">VS</span></div>
+        <div class="pp2 r">
+          <div class="pp2-name">${pair.b.name}</div>
+          <div class="pp2-career">${pair.b.carrera}</div>
+          <div class="pp2-stats"><span class="bx b-sem">${pair.b.sem}° sem</span>${pips(pair.b.nivel)}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  const byeDiv=document.getElementById('a-bye');
+  if(bye){ byeDiv.style.display='block'; document.getElementById('a-bye-name').textContent=`${bye.name} — ${bye.carrera}, ${bye.sem}° sem`; }
+  else    byeDiv.style.display='none';
+
+  document.getElementById('a-results').style.display='block';
+  document.getElementById('a-results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════
+updatePubCount();
+document.getElementById('pass-inp').addEventListener('keydown', e=>{ if(e.key==='Enter') tryLogin(); });
+</script>
+</body>
+</html>
